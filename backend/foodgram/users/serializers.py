@@ -1,17 +1,20 @@
-from django.conf import settings
 from django.contrib.auth import password_validation
+from djoser.serializers import (SetPasswordSerializer, UserCreateSerializer,
+                                UserSerializer)
 from rest_framework import serializers
-from djoser.serializers import (UserCreateSerializer, UserSerializer,
-                                SetPasswordSerializer)
 
-from .models import Subscribtion, User
 from recipes.models import Recipe
+
+from .models import Subscriptions, User
+
+WRONG_PASSWORD = 'Неправильный пароль, попробуйте еще раз.'
 
 
 class UserRegistrationSerializer(UserCreateSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'email',
             'username',
             'first_name',
@@ -36,18 +39,17 @@ class UserDetailSerializer(UserSerializer):
         lookup_field = 'username'
 
     def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        return Subscribtion.objects.get(
-            subscriber=request.user, author=obj).exists()
+        return Subscriptions.objects.filter(
+            user__id=self.context['request'].user.id,
+            author=obj
+        ).exists()
 
 
 class ChangePasswordSerializer(SetPasswordSerializer):
     def validate_current_password(self, value):
         is_password_valid = self.context['request'].user.check_password(value)
         if not is_password_valid:
-            raise 'Неправильный пароль!'
+            raise WRONG_PASSWORD
         return value
 
     def validate(self, data):
@@ -65,32 +67,29 @@ class ChangePasswordSerializer(SetPasswordSerializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
     class Meta:
-        model = Subscribtion
+        model = Subscriptions
         fields = (
             'user',
             'author'
         )
 
-    def validate(self, attrs):
-        if self.context['request'].user == attrs['author']:
-            raise serializers.ValidationError(
-                'Вы не можете подписатся на себя.'
-            )
-        return attrs
 
+class SubscribeRecipeSerializer(serializers.ModelSerializer):
 
-class SubscribersRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class RecipeAuthorSerializer(UserSerializer):
+class RecipeAuthorSerializer(UserDetailSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
-    class Meta(UserSerializer.Meta):
+    class Meta(UserDetailSerializer.Meta):
         fields = (
             'id',
             'username',
@@ -103,12 +102,17 @@ class RecipeAuthorSerializer(UserSerializer):
         )
 
     def get_recipes(self, obj):
-        recipes = obj.recipes.all()[:settings.RECIPES_LIMIT]
         request = self.context.get('request')
-        return SubscribersRecipeSerializer(
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit:
+            recipes = obj.recipes.all()[:(int(recipes_limit))]
+        else:
+            recipes = obj.recipes.all()
+        context = {'request': request}
+        return SubscribeRecipeSerializer(
             recipes,
             many=True,
-            context={'request': request}
+            context=context
         ).data
 
     def get_recipes_count(self, obj):

@@ -49,8 +49,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'],
 
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.'
-                                'PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'recipes.paginator.RecipesPagination',
     'PAGE_SIZE': 6,
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.'
                                 'NamespaceVersioning',
@@ -70,8 +69,6 @@ DJOSER = {
     'HIDE_USERS': False,
     'USER_ID_FIELD': 'id',
 }
-
-RECIPES_LIMIT = 6
 
 TEMPLATES = [
     {
@@ -116,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'UTC'
 
@@ -127,13 +124,13 @@ USE_L10N = True
 USE_TZ = True
 
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/back_media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = os.path.join(BASE_DIR, "back_media")
 
 
-STATIC_URL = '/static/'
+STATIC_URL = '/back_static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'back_static')
 
 AUTH_USER_MODEL = 'users.User'

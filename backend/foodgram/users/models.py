@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
@@ -55,7 +55,7 @@ class User(AbstractUser):
         return self.username
 
 
-class Subscribtion(models.Model):
+class Subscriptions(models.Model):
     user = models.ForeignKey(
         User,
         verbose_name='Пользователь',

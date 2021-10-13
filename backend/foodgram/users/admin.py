@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import User, Subscribtion
+
+from .models import Subscriptions, User
 
 
 @admin.register(User)
@@ -10,7 +11,7 @@ class UserAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Subscribtion)
+@admin.register(Subscriptions)
 class FollowAdmin(admin.ModelAdmin):
     list_display = ('user', 'author')
     search_fields = ('user',)

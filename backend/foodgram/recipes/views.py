@@ -1,30 +1,24 @@
-from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.views import APIView
-from rest_framework import permissions, status
 
-from .filters import RecipeFilters, IngredientFilter
+from .filters import IngredientFilter, RecipeFilters
+from .models import (Favorites, IngredientList, Ingredients,
+                     IngredientsInRecipes, Recipe, Tag)
 from .paginator import RecipesPagination
-from .models import (
-    Tag,
-    Ingredients,
-    Recipe,
-    Favorites,
-    IngredientsInRecipes,
-    IngredientList,
-)
-from .serializers import (
-    TagSerializer,
-    IngredientsSerializer,
-    RecipeSerializer,
-    RecipePostSerializer,
-    FavoriteRecipesSerializer,
-    IngredientListSerializer,
-)
+from .serializers import (FavoriteRecipesSerializer, IngredientListSerializer,
+                          IngredientsSerializer, RecipePostSerializer,
+                          RecipeSerializer, TagSerializer)
+
+FAVORITE_CREATE_MESSAGE = 'Рецепт успешно добавлен в избранное'
+FAVORITE_DELETE_ERROR_MESSAGE = 'Этого речепта небыло в избранном'
+FAVORITE_DELETE_MESSAGE = 'Рецепт удалён из избранного'
+SHOPPING_CART_ADD_MESSAGE = 'Рецепт успешно добавлен в корзину'
+SHOPPING_CART_ERROR_MESSAGE = 'Рецепта нет в списке покупок'
+SHOPPING_CART_DELETE_MESSAGE = 'Рецепт успешно удален из списка покупок'
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -80,19 +74,19 @@ class RecipeViewSet(ModelViewSet):
         if request.method == 'GET':
             serializer.save()
             return Response(
-                {'status': 'Рецепт успешно добавлен в избранное'},
+                {'status': FAVORITE_CREATE_MESSAGE},
                 status=status.HTTP_201_CREATED
             )
         if request.method == 'DELETE':
-            recipe = self.get_object()
+            recipe = Recipe.objects.get(id=pk)
             deleted_objects = Favorites.objects.filter(
                 user=request.user,
                 recipe=recipe
             ).delete()
             if deleted_objects is None:
-                raise 'Этого речепта небыло в избранном'
+                raise FAVORITE_DELETE_ERROR_MESSAGE
             return Response(
-                {'status': 'Рецепт удалён из избранного'},
+                {'status': FAVORITE_DELETE_MESSAGE},
                 status=status.HTTP_204_NO_CONTENT
             )
 
@@ -112,7 +106,7 @@ class RecipeViewSet(ModelViewSet):
         if request.method == 'GET':
             serializer.save()
             return Response(
-                {'status': 'Рецепт успешно добавлен в корзину'},
+                {'status': SHOPPING_CART_ADD_MESSAGE},
                 status=status.HTTP_201_CREATED
             )
         if request.method == 'DELETE':
@@ -122,34 +116,39 @@ class RecipeViewSet(ModelViewSet):
                 recipe=recipe
             )
             if deleted_recipe is None:
-                raise 'Рецепта нет в списке покупок'
+                raise SHOPPING_CART_ERROR_MESSAGE
             return Response(
-                {'status': 'Рецепт успешно удален из списка покупок'},
+                {'status': SHOPPING_CART_DELETE_MESSAGE},
                 status=status.HTTP_204_NO_CONTENT
             )
 
-
-class DownloadIngredientsList(APIView):
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def get(self, request):
+    @action(
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def download_shopping_cart(self, request):
+        shopping_cart = request.user.ingredient_list.all()
         buying_list = {}
-        ingredients = IngredientsInRecipes.objects.filter(
-            recipe__shopping_cart__user=request.user).values_list(
-            'ingredients__name', 'amount', 'ingredients__measurement_unit')
-        ingredients = ingredients.values(
-            'ingredients__name', 'ingredients__measurement_unit'
-        ).annotate(total=Sum('amount'))
-        for ingredient in ingredients:
-            amount = ingredient['total']
-            name = ingredient['ingredients__name']
-            measurement_unit = ingredient['ingredients__measurement_unit']
-            buying_list[name] = {'measurement_unit': measurement_unit,
-                                 'amount': amount}
+
+        for item in shopping_cart:
+            ingredients = IngredientsInRecipes.objects.filter(recipe=item.recipe)
+            for ingredient in ingredients:
+                amount = ingredient.amount
+                name = ingredient.ingredients.name
+                measurement_unit = ingredient.ingredients.measurement_unit
+
+                if name not in buying_list:
+                    buying_list[name] = {
+                        'measurement_unit': measurement_unit,
+                        'amount': amount
+                    }
+                else:
+                    buying_list[name]['amount'] = (buying_list[name]['amount']
+                                                   + amount)
         wishlist = []
         for item in buying_list:
             wishlist.append(f'{item} - {buying_list[item]["amount"]} '
-                            f'{buying_list[item]["measurements_unit"]} \n')
+                            f'{buying_list[item]["measurement_unit"]} \n')
 
         response = HttpResponse(wishlist, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="wishlist.txt"'

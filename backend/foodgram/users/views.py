@@ -1,43 +1,41 @@
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework import (permissions,
-                            viewsets, status)
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from .models import User, Subscribtion
-from .serializers import (
-    RecipeAuthorSerializer,
-    SubscribeSerializer,
-    UserSerializer,
-    UserRegistrationSerializer,
-    ChangePasswordSerializer
-)
+
+from .models import Subscriptions, User
+from .serializers import (ChangePasswordSerializer, RecipeAuthorSerializer,
+                          SubscribeSerializer, UserDetailSerializer,
+                          UserRegistrationSerializer)
+
+SUBSCRIBE_CREATE_MESSAGE = 'Вы подписались на автора'
+SUBSCRIBE_DELETE_MESSAGE = 'Вы отписались от автора'
+SET_PASSWORD_MESSAGE = 'Пароль успешно изменен'
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
+    serializer_class = UserDetailSerializer
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny, )
 
     def get_serializer_class(self):
         if self.action == 'create':
             return UserRegistrationSerializer
-        return User
+        return UserDetailSerializer
 
     @action(
-        detail=True,
-        methods=['GET', 'PATH', 'PUT'],
+        detail=False,
+        methods=['GET'],
         permission_classes=(permissions.IsAuthenticated,),
     )
     def me(self, request):
-        if request.method == 'GET':
-            serializer = self.get_serializer(request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer = self.get_serializer(
-            request.user, data=request.data, partial=True
+        user = request.user
+        context = {'request': request}
+        serializer = UserDetailSerializer(
+            user,
+            context=context
         )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(role=request.user.role, partial=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
     @action(
         detail=True,
@@ -52,15 +50,16 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid()
             serializer.save()
             return Response(
-                {'status': 'Вы подписались на автора'},
+                {'status': SUBSCRIBE_CREATE_MESSAGE},
                 status=status.HTTP_201_CREATED
             )
         if request.method == 'DELETE':
+            serializer.is_valid(raise_exception=True)
             unfollow = get_object_or_404(
-                Subscribtion, **serializer.validated_data)
+                Subscriptions, **serializer.validated_data)
             unfollow.delete()
             return Response(
-                {'status': 'Вы отписались от автора'},
+                {'status': SUBSCRIBE_DELETE_MESSAGE},
                 status=status.HTTP_204_NO_CONTENT
             )
 
@@ -70,33 +69,35 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
     )
     def subscriptions(self, request):
-        subscriber = User.objects.filter(author__user__id=request.user.id)
-        page = self.paginate_queryset(subscriber)
+        context = {'request': request}
+        user = get_object_or_404(User, id=request.user.id)
+        queryset = user.author.all()
+        page = self.paginate_queryset(queryset)
         if page:
             serializer = RecipeAuthorSerializer(
                 page,
                 many=True,
-                context={'request': request}
+                context=context
             )
             return self.get_paginated_response(serializer.data)
         serializer = RecipeAuthorSerializer(
-            subscriber,
+            queryset,
             many=True,
-            context={'request': request}
+            context=context
         )
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
-        detail=True,
+        detail=False,
         methods=['POST'],
         permission_classes=(permissions.IsAuthenticated,)
     )
     def set_password(self, request):
         serializer = ChangePasswordSerializer(
-            deta=request.date, context={'request': request})
+            data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {'status': 'Пароль успешно изменен'},
+            {'status': SET_PASSWORD_MESSAGE},
             status=status.HTTP_201_CREATED
         )
