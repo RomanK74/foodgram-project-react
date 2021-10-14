@@ -7,7 +7,7 @@ SECRET_KEY = 'erz=#@+^yydr!!2$ws#%^tyj+%umj=1*(okojp2$mq*h!n34_8'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'backend']
 
 
 INSTALLED_APPS = [

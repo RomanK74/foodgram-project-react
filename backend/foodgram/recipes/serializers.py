@@ -165,11 +165,10 @@ class RecipePostSerializer(serializers.ModelSerializer):
             instance.cooking_time
         )
         instance.image = validated_data.get('image', instance.image)
-        for ingredient in instance.quantities.all():
-            ingredient.delete()
-        ingredients = self.context['request'].data['ingredients']
-        for ingredient in ingredients:
-            RecipeSerializer.create_amount(instance, ingredient)
+        if 'ingredients' in self.initial_data:
+            ingredients = validated_data.pop('ingredients')
+            instance.ingredients.clear()
+            self.add_ingredients(ingredients, instance)
         instance.save()
         return instance
 
