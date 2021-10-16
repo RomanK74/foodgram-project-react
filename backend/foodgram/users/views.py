@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from .models import Subscriptions, User
+from .models import Subscription, User
 from .serializers import (ChangePasswordSerializer, RecipeAuthorSerializer,
                           SubscribeSerializer, UserDetailSerializer,
                           UserRegistrationSerializer)
@@ -47,7 +47,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 'author': pk}
         serializer = SubscribeSerializer(data=data)
         if request.method == 'GET':
-            serializer.is_valid()
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(
                 {'status': SUBSCRIBE_CREATE_MESSAGE},
@@ -56,7 +56,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'DELETE':
             serializer.is_valid(raise_exception=True)
             unfollow = get_object_or_404(
-                Subscriptions, **serializer.validated_data)
+                Subscription, **serializer.validated_data)
             unfollow.delete()
             return Response(
                 {'status': SUBSCRIBE_DELETE_MESSAGE},
@@ -70,9 +70,10 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def subscriptions(self, request):
         context = {'request': request}
-        user = get_object_or_404(User, id=request.user.id)
-        queryset = user.author.all()
-        page = self.paginate_queryset(queryset)
+        subscriber = User.objects.filter(
+            author__in=request.user.author.all()
+        ).order_by("id")
+        page = self.paginate_queryset(subscriber)
         if page:
             serializer = RecipeAuthorSerializer(
                 page,
@@ -81,7 +82,7 @@ class UserViewSet(viewsets.ModelViewSet):
             )
             return self.get_paginated_response(serializer.data)
         serializer = RecipeAuthorSerializer(
-            queryset,
+            subscriber,
             many=True,
             context=context
         )

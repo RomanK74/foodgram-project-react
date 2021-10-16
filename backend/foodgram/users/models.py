@@ -55,7 +55,7 @@ class User(AbstractUser):
         return self.username
 
 
-class Subscriptions(models.Model):
+class Subscription(models.Model):
     user = models.ForeignKey(
         User,
         verbose_name='Пользователь',
@@ -72,6 +72,7 @@ class Subscriptions(models.Model):
     )
 
     class Meta:
+        ordering = ('-pk',)
         verbose_name = 'Подписки'
         constraints = [
             models.UniqueConstraint(fields=["user", "author"],

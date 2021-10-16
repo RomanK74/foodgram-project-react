@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from recipes.models import (Favorites, IngredientList, Ingredients,
-                            IngredientsInRecipes, Recipe, Tag)
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe,
+                            IngredientList, Recipe, Tag)
 
 
 @admin.register(Recipe)
@@ -15,7 +15,7 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(IngredientsInRecipes)
+@admin.register(IngredientInRecipe)
 class IngredientsInRecipesAdmin(admin.ModelAdmin):
     list_display = ('id', 'recipe', 'ingredients', 'amount')
 
@@ -34,7 +34,7 @@ class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name', )}
 
 
-@admin.register(Ingredients)
+@admin.register(Ingredient)
 class IngredientsAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'measurement_unit')
     list_filter = ('name',)
@@ -47,7 +47,7 @@ class IngredientListAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Favorites)
+@admin.register(Favorite)
 class FavoritesAdmin(admin.ModelAdmin):
     list_display = ('pk', 'recipe', 'user', 'date_added')
     search_fields = ('user', 'recipe')

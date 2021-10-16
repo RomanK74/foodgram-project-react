@@ -1,11 +1,12 @@
 from django.contrib.auth import password_validation
+
 from djoser.serializers import (SetPasswordSerializer, UserCreateSerializer,
                                 UserSerializer)
 from rest_framework import serializers
 
 from recipes.models import Recipe
 
-from .models import Subscriptions, User
+from .models import Subscription, User
 
 WRONG_PASSWORD = 'Неправильный пароль, попробуйте еще раз.'
 
@@ -39,7 +40,7 @@ class UserDetailSerializer(UserSerializer):
         lookup_field = 'username'
 
     def get_is_subscribed(self, obj):
-        return Subscriptions.objects.filter(
+        return Subscription.objects.filter(
             user__id=self.context['request'].user.id,
             author=obj
         ).exists()
@@ -71,7 +72,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
-        model = Subscriptions
+        model = Subscription
         fields = (
             'user',
             'author'
@@ -102,18 +103,14 @@ class RecipeAuthorSerializer(UserDetailSerializer):
         )
 
     def get_recipes(self, obj):
-        request = self.context.get('request')
+        request = self.context['request']
         recipes_limit = request.query_params.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj)
         if recipes_limit:
-            recipes = obj.recipes.all()[:(int(recipes_limit))]
-        else:
-            recipes = obj.recipes.all()
-        context = {'request': request}
-        return SubscribeRecipeSerializer(
-            recipes,
-            many=True,
-            context=context
-        ).data
+            recipes_limit = int(recipes_limit)
+            queryset = queryset[:recipes_limit]
+        return [SubscribeRecipeSerializer(query).data for query in queryset]
 
     def get_recipes_count(self, obj):
-        return obj.recipes.count()
+        queryset = Recipe.objects.filter(author=obj)
+        return queryset.count()

@@ -1,12 +1,15 @@
-from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.serializers import ValidationError
 
 from users.models import User
 from users.serializers import UserDetailSerializer
 
-from .models import (Favorites, IngredientList, Ingredients,
-                     IngredientsInRecipes, Recipe, Tag)
+from .models import (Favorite, Ingredient, IngredientInRecipe, IngredientList,
+                     Recipe, Tag)
+
+INGREDIENT_VALIDATION_ERROR = 'Добавте хотябы один ингредиент!'
+UNIQUE_INGREDIENT_ERROR = 'Ингредиент уже в рецепте!'
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -20,9 +23,9 @@ class TagSerializer(serializers.ModelSerializer):
         )
 
 
-class IngredientsSerializer(serializers.ModelSerializer):
+class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ingredients
+        model = Ingredient
         fields = (
             'id',
             'name',
@@ -37,7 +40,7 @@ class IngredientsInRecipesSerializer(serializers.ModelSerializer):
         source='ingredients.measurement_unit')
 
     class Meta:
-        model = IngredientsInRecipes
+        model = IngredientInRecipe
         fields = (
             'id',
             'name',
@@ -47,11 +50,11 @@ class IngredientsInRecipesSerializer(serializers.ModelSerializer):
 
 
 class IngredientsInRecipesPostSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredients.objects.all())
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(write_only=True)
 
     class Meta:
-        model = IngredientsInRecipes
+        model = IngredientInRecipe
         fields = (
             'id',
             'amount'
@@ -81,14 +84,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        queryset = IngredientsInRecipes.objects.filter(recipe=obj)
+        queryset = IngredientInRecipe.objects.filter(recipe=obj)
         return IngredientsInRecipesSerializer(queryset, many=True).data
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request.user.is_anonymous:
             return False
-        return Favorites.objects.filter(
+        return Favorite.objects.filter(
             user=request.user, recipe_id=obj.id
         ).exists()
 
@@ -123,23 +126,22 @@ class RecipePostSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        ingredients = self.context['request'].data['ingredients']
-        ingredients_list = []
-        for ingredient in ingredients:
-            odject = get_object_or_404(Ingredients, id=ingredient['id'])
-            if odject not in ingredients_list:
-                ingredients_list.append(odject)
-            else:
-                raise serializers.ValidationError(
-                    f'Вы повторно добавляете {ingredient.name}'
-                )
+        if 'ingredients' not in self.initial_data['ingredientsS']:
+            raise ValidationError(INGREDIENT_VALIDATION_ERROR)
+        ingredients = self.initial_data.get('ingredients')
+        ingredients_list = len(ingredients)
+        ingredient_set = len(
+            set([ingredient['id'] for ingredient in ingredients])
+        )
+        if ingredients_list > ingredient_set:
+            raise ValidationError(UNIQUE_INGREDIENT_ERROR)
         return data
 
     def add_ingredients(self, ingredients, recipe):
         for ingredient in ingredients:
             item = ingredient['id']
             amount = ingredient['amount']
-            IngredientsInRecipes.objects.create(
+            IngredientInRecipe.objects.create(
                 ingredients=item,
                 recipe=recipe,
                 amount=amount
@@ -182,7 +184,7 @@ class FavoriteRecipesSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Favorites
+        model = Favorite
         fields = (
             'user',
             'recipe'
