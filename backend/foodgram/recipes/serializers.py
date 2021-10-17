@@ -132,7 +132,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        if 'ingredients' not in self.initial_data['ingredients']:
+        ingredients = self.initial_data.get('ingredients')
+        if not ingredients:
             raise ValidationError(INGREDIENT_VALIDATION_ERROR)
         ingredients = self.initial_data.get('ingredients')
         ingredients_list = len(ingredients)

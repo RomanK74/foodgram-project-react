@@ -11,18 +11,18 @@ django.setup()
 
 def load_all_data(func):
 
-    from recipes.models import Ingredients
+    from recipes.models import Ingredient
 
-    func('ingredients.csv', Ingredients)
+    func('ingredients.csv', Ingredient)
     print('\nИнгридиенты загружены\n')
 
 
 @load_all_data
 def load_table_from_csv(fname, model):
-    from recipes.models import Ingredients
+    from recipes.models import Ingredient
     file = open(fname, 'r', encoding='utf-8')
     reader = csv.DictReader(file, delimiter=',')
     for row in reader:
-        Ingredients.objects.create(
+        Ingredient.objects.create(
             name=row['абрикосовое варенье'], measurement_unit=row['г'])
         print(f'{row}')
