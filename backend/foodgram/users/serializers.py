@@ -1,7 +1,7 @@
 from django.contrib.auth import password_validation
-
-from djoser.serializers import (SetPasswordSerializer, UserCreateSerializer,
-                                UserSerializer)
+from djoser.serializers import (
+    SetPasswordSerializer, UserCreateSerializer, UserSerializer,
+)
 from rest_framework import serializers
 
 from recipes.models import Recipe

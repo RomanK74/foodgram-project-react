@@ -4,9 +4,10 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Subscription, User
-from .serializers import (ChangePasswordSerializer, RecipeAuthorSerializer,
-                          SubscribeSerializer, UserDetailSerializer,
-                          UserRegistrationSerializer)
+from .serializers import (
+    ChangePasswordSerializer, RecipeAuthorSerializer, SubscribeSerializer,
+    UserDetailSerializer, UserRegistrationSerializer,
+)
 
 SUBSCRIBE_CREATE_MESSAGE = 'Вы подписались на автора'
 SUBSCRIBE_DELETE_MESSAGE = 'Вы отписались от автора'

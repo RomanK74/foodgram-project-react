@@ -1,7 +1,7 @@
+from colorfield.fields import ColorField
+
 from django.core.validators import MinValueValidator
 from django.db import models
-
-from colorfield.fields import ColorField
 
 from users.models import User
 
@@ -67,7 +67,7 @@ class Recipe(models.Model):
         db_index=True
     )
     image = models.ImageField(
-        upload_to='media/',
+        upload_to='back_media/',
         verbose_name='Фото блюда'
     )
     text = models.TextField(
@@ -77,7 +77,6 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         through='RecipeTag',
-        related_name='tag',
         verbose_name='тег'
     )
     ingredients = models.ManyToManyField(

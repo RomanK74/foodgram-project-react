@@ -1,19 +1,21 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .filters import IngredientFilter, RecipeFilters
-from .models import (Favorite, Ingredient, IngredientInRecipe, IngredientList,
-                     Recipe, Tag)
+from .models import (
+    Favorite, Ingredient, IngredientInRecipe, IngredientList, Recipe, Tag,
+)
 from .paginator import RecipesPagination
-from .serializers import (FavoriteRecipesSerializer, IngredientListSerializer,
-                          IngredientSerializer, RecipePostSerializer,
-                          RecipeSerializer, TagSerializer)
+from .serializers import (
+    FavoriteRecipesSerializer, IngredientListSerializer, IngredientSerializer,
+    RecipePostSerializer, RecipeSerializer, TagSerializer,
+)
 
 FAVORITE_CREATE_MESSAGE = 'Рецепт успешно добавлен в избранное'
 FAVORITE_DELETE_ERROR_MESSAGE = 'Этого речепта небыло в избранном'
