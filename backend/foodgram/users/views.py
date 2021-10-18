@@ -30,13 +30,11 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
     )
     def me(self, request):
-        user = request.user
-        context = {'request': request}
-        serializer = UserDetailSerializer(
-            user,
-            context=context
-        )
-        return Response(serializer.data)
+        user = get_object_or_404(User, username=request.user.username)
+        serializer = UserDetailSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid() and request.method in ("PATCH",):
+            serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         detail=True,
@@ -70,22 +68,17 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
     )
     def subscriptions(self, request):
-        context = {'request': request}
         subscriber = User.objects.filter(
-            author__in=request.user.author.all()
-        ).order_by("id")
+            author__in=request.user.subscriber.all()
+        ).order_by('id')
         page = self.paginate_queryset(subscriber)
         if page:
             serializer = RecipeAuthorSerializer(
-                page,
-                many=True,
-                context=context
+                subscriber, many=True, context={'request': request}
             )
             return self.get_paginated_response(serializer.data)
         serializer = RecipeAuthorSerializer(
-            subscriber,
-            many=True,
-            context=context
+            subscriber, many=True, context={'request': request}
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 

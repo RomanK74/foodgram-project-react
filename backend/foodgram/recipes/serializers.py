@@ -1,16 +1,10 @@
 from drf_extra_fields.fields import Base64ImageField
-
 from rest_framework import serializers
 
 from users.models import User
 from users.serializers import UserDetailSerializer
 from .models import (
-    Favorite,
-    Ingredient,
-    IngredientInRecipe,
-    IngredientList,
-    Recipe,
-    Tag,
+    Favorite, Ingredient, IngredientInRecipe, IngredientList, Recipe, Tag,
 )
 
 INGREDIENT_VALIDATION_ERROR = 'Добавте хотябы один ингредиент!'

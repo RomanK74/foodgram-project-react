@@ -39,8 +39,9 @@ class UserDetailSerializer(UserSerializer):
         lookup_field = 'username'
 
     def get_is_subscribed(self, obj):
+        request = self.context.get('request')
         return Subscription.objects.filter(
-            user__id=self.context['request'].user.id,
+            user=request.user,
             author=obj
         ).exists()
 

@@ -7,6 +7,7 @@ class RecipeFilters(filters.FilterSet):
     tas = filters.AllValuesMultipleFilter(
         field_name='tags__slug'
     )
+
     is_favorited = filters.BooleanFilter(
         method='get_is_favorited'
     )
