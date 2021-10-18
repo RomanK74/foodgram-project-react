@@ -31,7 +31,7 @@ services:
              python manage.py createadmin &&
              python manage.py filldb"
     depends_on:
-      - backend
+      - db
     env_file:
       - ./.env
   frontend:
@@ -39,7 +39,7 @@ services:
     volumes:
       - frontend_data:/app/result_build/
     depends_on:
-      - postgres
+      - db
   nginx:
     image: nginx:1.19.3
     ports:
@@ -52,4 +52,9 @@ services:
       - static_value:/var/html/back_static/
       - media_value:/var/html/back_media/
     depends_on:
-      - frontend
+      - backend
+
+volumes:
+  postgres_data:
+  static_value:
+  media_value:
