@@ -21,7 +21,7 @@ FAVORITE_DELETE_ERROR_MESSAGE = 'Этого речепта небыло в из�
 FAVORITE_DELETE_MESSAGE = 'Рецепт удалён из избранного'
 SHOPPING_CART_ADD_MESSAGE = 'Рецепт успешно добавлен в корзину'
 SHOPPING_CART_ERROR_MESSAGE = 'Рецепта нет в списке покупок'
-SHOPPING_CART_DELETE_MESSAGE = 'Рецепт успешно удален из списка покупок!'
+SHOPPING_CART_DELETE_MESSAGE = 'Рецепт успешно удален из списка покупок'
 
 
 class TagViewSet(ReadOnlyModelViewSet):
