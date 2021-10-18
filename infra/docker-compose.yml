@@ -13,23 +13,33 @@ services:
     env_file:
       - ./.env
   backend:
-    build:
-      context: ../backend/foodgram
-      dockerfile: Dockerfile
+     image: kroman74/foodgram:latest
     restart: always
     volumes:
       - static_value:/code/back_static/
       - media_value:/code/back_media/
+    env_file:
+      - ./.env
+  migrations:
+    image: kroman74/foodgram:latest
+    volumes:
+      - static_value:/code/back_static/
+      - media_value:/code/back_media/
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py createadmin &&
+             python manage.py filldb"
     depends_on:
-      - db
+      - backend
     env_file:
       - ./.env
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: kroman74/foodgram-frontend:latest
     volumes:
-      - ../frontend/:/app/result_build/
+      - frontend_data:/app/result_build/
+    depends_on:
+      - postgres
   nginx:
     image: nginx:1.19.3
     ports:
