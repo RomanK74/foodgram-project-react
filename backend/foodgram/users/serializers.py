@@ -5,7 +5,6 @@ from djoser.serializers import (
 from rest_framework import serializers
 
 from recipes.models import Recipe
-
 from .models import Subscription, User
 
 WRONG_PASSWORD = 'Неправильный пароль, попробуйте еще раз.'

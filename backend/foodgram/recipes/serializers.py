@@ -1,12 +1,16 @@
 from drf_extra_fields.fields import Base64ImageField
+
 from rest_framework import serializers
-from rest_framework.serializers import ValidationError
 
 from users.models import User
 from users.serializers import UserDetailSerializer
-
 from .models import (
-    Favorite, Ingredient, IngredientInRecipe, IngredientList, Recipe, Tag,
+    Favorite,
+    Ingredient,
+    IngredientInRecipe,
+    IngredientList,
+    Recipe,
+    Tag,
 )
 
 INGREDIENT_VALIDATION_ERROR = 'Добавте хотябы один ингредиент!'
@@ -133,31 +137,41 @@ class RecipePostSerializer(serializers.ModelSerializer):
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
         if not ingredients:
-            raise ValidationError(INGREDIENT_VALIDATION_ERROR)
+            raise serializers.ValidationError(
+                INGREDIENT_VALIDATION_ERROR
+            )
         ingredients = self.initial_data.get('ingredients')
         ingredients_list = len(ingredients)
         ingredient_set = len(
             set([ingredient['id'] for ingredient in ingredients])
         )
         if ingredients_list > ingredient_set:
-            raise ValidationError(UNIQUE_INGREDIENT_ERROR)
+            raise serializers.ValidationError(
+                UNIQUE_INGREDIENT_ERROR
+            )
         for ingredient in ingredients:
             if int(ingredient['amount']) <= 0:
-                raise ValidationError(AMOUNT_VALIDATION_ERROR)
+                raise serializers.ValidationError(
+                    AMOUNT_VALIDATION_ERROR
+                )
         if float(self.initial_data.get('cooking_time')) <= 0:
-            raise ValidationError(COOKING_TIME_VALIDATION_ERROR)
+            raise serializers.ValidationError(
+                COOKING_TIME_VALIDATION_ERROR
+            )
         return data
 
     def validate_tag(self, data):
         tags = self.initial_data.get('tags')
         if tags is None:
-            raise ValidationError(TAG_VALIDATION_ERROR)
+            raise serializers.ValidationError(
+                TAG_VALIDATION_ERROR
+            )
         tags_list = len(tags)
         tags_set = len(
             set([tag['id'] for tag in tags])
         )
         if tags_list > tags_set:
-            raise ValidationError(UNIQUE_TAG_ERROR)
+            raise serializers.ValidationError(UNIQUE_TAG_ERROR)
         return data
 
     def add_ingredients(self, ingredients, recipe):
