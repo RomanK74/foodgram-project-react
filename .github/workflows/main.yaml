@@ -21,7 +21,7 @@ jobs:
         run:
           python -m pip install --upgrade pip
           pip install flake8 pytest
-          pip install -r backend/foodgram/requirements.txt
+          pip install -r backend/requirements.txt
 
       - name: Lint with flake8
         run: flake8 .
@@ -46,7 +46,7 @@ jobs:
         with:
           push: true
           context: ./backend/
-          file: ./backend/foodgram/Dockerfile
+          file: ./backend/Dockerfile
           tags: kroman74/foodgram:latest
       - name: Push to DockerHub
         uses: docker/build-push-action@v2
