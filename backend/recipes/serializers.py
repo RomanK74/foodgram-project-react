@@ -7,7 +7,7 @@ from .models import (
     Favorite, Ingredient, IngredientInRecipe, IngredientList, Recipe, Tag,
 )
 
-INGREDIENT_VALIDATION_ERROR = 'Добавте хотябы один ингредиент!'
+INGREDIENT_VALIDATION_ERROR = 'Добавте хотябы один ингредиент'
 UNIQUE_INGREDIENT_ERROR = 'Ингредиент уже в рецепте!'
 AMOUNT_VALIDATION_ERROR = 'Ингредиента должно быть больше 0!'
 COOKING_TIME_VALIDATION_ERROR = 'Время приготовления должно быть больше 0!'
