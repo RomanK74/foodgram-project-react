@@ -10,7 +10,8 @@ SECRET_KEY = os.getenv('ALLOWED_HOSTS', '*').split(', ')
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'backend', ]
+ALLOWED_HOSTS = ['*']
+# '127.0.0.1', 'localhost', 'backend', '0.0.0.0'
 
 os.getenv('ALLOWED_HOSTS', '*').split(', ')
 
