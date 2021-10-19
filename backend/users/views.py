@@ -26,7 +26,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=['GET'],
+        methods=['GET', 'PATCH', 'PUT'],
         permission_classes=(permissions.IsAuthenticated,),
     )
     def me(self, request):
@@ -72,7 +72,7 @@ class UserViewSet(viewsets.ModelViewSet):
             author__in=request.user.subscriber.all()
         ).order_by('id')
         page = self.paginate_queryset(subscriber)
-        if page:
+        if page is not None:
             serializer = RecipeAuthorSerializer(
                 subscriber, many=True, context={'request': request}
             )
