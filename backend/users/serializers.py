@@ -110,10 +110,11 @@ class RecipeAuthorSerializer(UserDetailSerializer):
         request = self.context['request']
         recipes_limit = request.query_params.get('recipes_limit')
         queryset = Recipe.objects.filter(author=obj)
-        if recipes_limit:
+        if recipes_limit is not None and recipes_limit.isnumeric():
             recipes_limit = int(recipes_limit)
             queryset = queryset[:recipes_limit]
         return [SubscribeRecipeSerializer(query).data for query in queryset]
 
     def get_recipes_count(self, obj):
-        return obj.recipes.count()
+        queryset = Recipe.objects.filter(author=obj)
+        return queryset.count()

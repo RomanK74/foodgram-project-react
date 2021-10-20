@@ -4,7 +4,7 @@ from .models import Ingredient, Recipe
 
 
 class RecipeFilters(filters.FilterSet):
-    tas = filters.AllValuesMultipleFilter(
+    tags = filters.AllValuesMultipleFilter(
         field_name='tags__slug',
         label='Tags'
     )
