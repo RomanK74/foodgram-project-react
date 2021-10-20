@@ -1,6 +1,8 @@
+[![codestyle PEP8, build and deploy](https://github.com/RomanK74/foodgram-project-react/actions/workflows/main.yaml/badge.svg)](https://github.com/RomanK74/foodgram-project-react/actions/workflows/main.yaml)
+
 # Foodgram
 * Проект доступен 
-    http:// -Foodgram
+    http://178.154.254.67/recipes -Foodgram
 
 ### Описание
 
@@ -35,3 +37,7 @@ docker-compose exec web python manage.py loaddata fixtures.json
 
 #### Создание суперпользователя:
 - docker-compose exec web python manage.py createsuperuser
+
+#### Реквизиты администратора:
+- email: admin@gmail.com
+- password : admin
