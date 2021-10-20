@@ -15,7 +15,6 @@ class RecipeFilters(filters.FilterSet):
     )
     is_in_ingredient_list = filters.BooleanFilter(
         method='get_is_in_ingredient_list',
-        label='Is in shopping cart'
     )
 
     class Meta:
@@ -31,8 +30,8 @@ class RecipeFilters(filters.FilterSet):
     def get_is_in_ingredient_list(self, queryset, name, value):
         user = self.request.user
         if value:
-            return Recipe.objects.filter(ingredient_list__user=user)
-        return Recipe.objects.all()
+            return queryset.filter(ingredient_list__user=user)
+        return queryset
 
 
 class IngredientFilter(filters.FilterSet):
