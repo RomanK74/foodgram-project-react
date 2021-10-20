@@ -10,10 +10,12 @@ class RecipeFilters(filters.FilterSet):
     )
 
     is_favorited = filters.BooleanFilter(
-        method='get_is_favorited'
+        method='get_is_favorited',
+        label='Favorited'
     )
     is_in_ingredient_list = filters.BooleanFilter(
-        method='get_is_in_ingredient_list'
+        method='get_is_in_ingredient_list',
+        label='Is in shopping cart'
     )
 
     class Meta:
@@ -23,7 +25,7 @@ class RecipeFilters(filters.FilterSet):
     def get_is_favorited(self, queyset, name, value):
         user = self.request.user
         if value:
-            return Recipe.objects.filter(favorites__user=user)
+            return Recipe.objects.filter(favorited_by__user=user)
         return Recipe.objects.all()
 
     def get_is_in_ingredient_list(self, queryset, name, value):

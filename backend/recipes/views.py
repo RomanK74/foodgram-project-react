@@ -27,14 +27,14 @@ SHOPPING_CART_DELETE_MESSAGE = 'Рецепт успешно удален из с
 class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (permissions.AllowAny, )
     pagination_class = None
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (permissions.AllowAny, )
     filter_backends = (DjangoFilterBackend, )
     filter_class = IngredientFilter
     pagination_class = None
@@ -46,6 +46,25 @@ class RecipeViewSet(ModelViewSet):
     filter_class = RecipeFilters
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     pagination_class = RecipesPagination
+
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        is_favorited = self.request.query_params.get("is_favorited")
+        favorite = Favorite.objects.filter(user=self.request.user.id)
+        is_in_shopping_cart = self.request.query_params.get(
+            "is_in_shopping_cart"
+        )
+        shopping_cart = IngredientList.objects.filter(user=self.request.user.id)
+
+        if is_favorited == "true":
+            queryset = queryset.filter(favorite__in=favorite)
+        elif is_favorited == "false":
+            queryset = queryset.exclude(favorite__in=favorite)
+        if is_in_shopping_cart == "true":
+            queryset = queryset.filter(ingredientlist__in=shopping_cart)
+        elif is_in_shopping_cart == "false":
+            queryset = queryset.exclude(ingredientlist__in=shopping_cart)
+        return queryset.all().order_by("-id")
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

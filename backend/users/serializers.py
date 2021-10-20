@@ -116,5 +116,4 @@ class RecipeAuthorSerializer(UserDetailSerializer):
         return [SubscribeRecipeSerializer(query).data for query in queryset]
 
     def get_recipes_count(self, obj):
-        queryset = Recipe.objects.filter(author=obj)
-        return queryset.count()
+        return obj.recipes.count()
