@@ -47,18 +47,6 @@ class RecipeViewSet(ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     pagination_class = RecipesPagination
 
-    def get_queryset(self):
-        queryset = Recipe.objects.all()
-        is_in_shopping_cart = self.request.query_params.get(
-            "is_in_shopping_cart"
-        )
-        shopping_cart = IngredientList.objects.filter(user=self.request.user.id)
-        if is_in_shopping_cart == "true":
-            queryset = queryset.filter(ingredientlist__in=shopping_cart)
-        elif is_in_shopping_cart == "false":
-            queryset = queryset.exclude(ingredientlist__in=shopping_cart)
-        return queryset.all().order_by("-id")
-
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return RecipeSerializer
