@@ -1,12 +1,14 @@
 from django_filters import rest_framework as filters
 
-from .models import Ingredient, Recipe
+from .models import Ingredient, Recipe, Tag
 
 
 class RecipeFilters(filters.FilterSet):
-    tags = filters.AllValuesMultipleFilter(
+    tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
-        label='Tags'
+        queryset=Tag.objects.all(),
+        label='Tags',
+        to_field_name="slug",
     )
 
     is_favorited = filters.BooleanFilter(
