@@ -1,8 +1,6 @@
 [![codestyle PEP8, build and deploy](https://github.com/RomanK74/foodgram-project-react/actions/workflows/main.yaml/badge.svg)](https://github.com/RomanK74/foodgram-project-react/actions/workflows/main.yaml)
 
 # Foodgram
-* Проект доступен 
-    http://178.154.254.67/recipes -Foodgram
 
 ### Описание
 
